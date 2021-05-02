@@ -123,9 +123,7 @@ while 1 :
                         break;
     if counter%15==0:
          data=data[9:]
-         
-       
-    
+
     tt = t.localtime()
     ct = t.strftime("%H:%M:%S", tt)
 
