@@ -56,7 +56,7 @@ def formatPrice(n):
 def getStockDataVec(key):
     vec = []
     lines = open(key+".csv","r").read().splitlines()
-    for line in lines[1:1000]:
+    for line in lines[1:]:
         x=line.split(",")[1]
         if x=="null":
           x=0
@@ -65,6 +65,7 @@ def getStockDataVec(key):
         #print(vec)
     return vec 
 def sigmoid(x):
+    print(x)
     return 1/(1+math.exp(-x))
 def getState(data, t, n):
     d = t - n + 1
@@ -74,93 +75,102 @@ def getState(data, t, n):
         res.append(sigmoid(block[i + 1] - block[i]))
     return np.array([res])
 
+def train(ws,ec):
+    stock_name = "Stockvol"
+    window_size = ws
+    episode_count = ec
+    stock_name = str(stock_name)
+    window_size = int(window_size)
+    episode_count = int(episode_count)
+    agent = Agent(window_size)
+    data = getStockDataVec(stock_name)
+    l = len(data) - 1
+    batch_size = 32
+    tic = time.perf_counter()
 
-stock_name = "Stockvol"
-window_size = 100
-episode_count = 3
-stock_name = str(stock_name)
-window_size = int(window_size)
-episode_count = int(episode_count)
-agent = Agent(window_size)
-data = getStockDataVec(stock_name)
-l = len(data) - 1
-batch_size = 32
-tic = time.perf_counter()
 
+    for e in range(episode_count + 1):
+        print("--------------------------------")
+        print("Episode " + str(e) + "/" + str(episode_count))
+        state = getState(data, 0, window_size + 1)
+        total_profit = 0
+        agent.inventory = []
+        for t in range(l):
+            action = agent.act(state)
+            # sit
+            # print(action)
+            next_state = getState(data, t + 1, window_size + 1)
+            reward = 0
+            tt = time.localtime()
+            ct = time.strftime("%H:%M:%S", tt)
 
-for e in range(episode_count + 1):
-    print("--------------------------------")
-    print("Episode " + str(e) + "/" + str(episode_count))
+            if action == 1: # buy
+                agent.inventory.append(data[t])
+                print(str(ct)+" : Buy: " + formatPrice(data[t]))
+            elif action == 2 and len(agent.inventory) > 0: # sell
+                bought_price = window_size_price = agent.inventory.pop(0)
+                reward = max(data[t] - bought_price, 0)
+                total_profit += data[t] - bought_price
+                print(str(ct)+" : Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
+            done = True if t == l - 1 else False
+            agent.memory.append((state, action, reward, next_state, done))
+            state = next_state
+            if done:
+                print("--------------------------------")
+                print("Total Profit: " + formatPrice(total_profit))
+                print("--------------------------------")
+            if len(agent.memory) > batch_size:
+                agent.expReplay(batch_size)
+        if e % 10 == 0:
+            agent.model.save(str(e))
+        toc = time.perf_counter()
+        print(f"Training finished in {toc - tic:0.4f} seconds")
+
+def test(bs,iv):
+    stock_name = "Stockvol"
+    model_name = "0"
+    model = load_model(model_name)
+    window_size = model.layers[0].input.shape.as_list()[1]
+    agent = Agent(window_size, True, model_name)
+    data = getStockDataVec(stock_name)
+    print(data)
+    l = len(data) - 1
+    batch_size = bs
     state = getState(data, 0, window_size + 1)
+    print(state)
     total_profit = 0
-    agent.inventory = []
+    agent.inventory = iv
+    print(l)
+    tic = time.perf_counter()
+
     for t in range(l):
         action = agent.act(state)
+        # print(action)
         # sit
         next_state = getState(data, t + 1, window_size + 1)
         reward = 0
         tt = time.localtime()
         ct = time.strftime("%H:%M:%S", tt)
-
         if action == 1: # buy
             agent.inventory.append(data[t])
-            print(str(ct)+" : Buy: " + formatPrice(data[t]))
+            print(str(ct)+" Buy: " + formatPrice(data[t]))
         elif action == 2 and len(agent.inventory) > 0: # sell
-            bought_price = window_size_price = agent.inventory.pop(0)
+            bought_price = agent.inventory.pop(0)
             reward = max(data[t] - bought_price, 0)
             total_profit += data[t] - bought_price
-            print(str(ct)+" : Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
+            print(str(ct)+" Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
         done = True if t == l - 1 else False
         agent.memory.append((state, action, reward, next_state, done))
         state = next_state
         if done:
             print("--------------------------------")
-            print("Total Profit: " + formatPrice(total_profit))
+            print(stock_name + " Total Profit: " + formatPrice(total_profit))
             print("--------------------------------")
-        if len(agent.memory) > batch_size:
-            agent.expReplay(batch_size)
-    if e % 10 == 0:
-        agent.model.save(str(e))
+            print ("Total profit is:",formatPrice(total_profit))
     toc = time.perf_counter()
-    print(f"Training finished in {toc - tic:0.4f} seconds")
-#Test
-stock_name = "Stockvol"
-model_name = "0"
-model = load_model(model_name)
-window_size = model.layers[0].input.shape.as_list()[1]
-agent = Agent(window_size, True, model_name)
-data = getStockDataVec(stock_name)
-print(data)
-l = len(data) - 1
-batch_size = 32
-state = getState(data, 0, window_size + 1)
-print(state)
-total_profit = 0
-agent.inventory = []
-print(l)
-for t in range(l):
-    action = agent.act(state)
-    print(action)
-    # sit
-    next_state = getState(data, t + 1, window_size + 1)
-    reward = 0
-    tt = time.localtime()
-    ct = time.strftime("%H:%M:%S", tt)
-    if action == 1: # buy
-        agent.inventory.append(data[t])
-        print(str(ct)+" Buy: " + formatPrice(data[t]))
-    elif action == 2 and len(agent.inventory) > 0: # sell
-        bought_price = agent.inventory.pop(0)
-        reward = max(data[t] - bought_price, 0)
-        total_profit += data[t] - bought_price
-        print(str(ct)+" Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
-    done = True if t == l - 1 else False
-    agent.memory.append((state, action, reward, next_state, done))
-    state = next_state
-    if done:
-        print("--------------------------------")
-        print(stock_name + " Total Profit: " + formatPrice(total_profit))
-        print("--------------------------------")
-        print ("Total profit is:",formatPrice(total_profit))
-toc = time.perf_counter()
-print(f"Testing finished in {toc - tic:0.4f} seconds")
+    print(f"Testing finished in {toc - tic:0.4f} seconds")
+
+
+# train(100,3)
+
+test(16,[59000,58000])
