@@ -56,7 +56,7 @@ def formatPrice(n):
 def getStockDataVec(key):
     vec = []
     lines = open(key+".csv","r").read().splitlines()
-    for line in lines[1:]:
+    for line in lines[7000:]:
         x=line.split(",")[1]
         if x=="null":
           x=0
@@ -65,8 +65,12 @@ def getStockDataVec(key):
         #print(vec)
     return vec 
 def sigmoid(x):
-    print(x)
-    return 1/(1+math.exp(-x))
+    # print(x)
+    if x>20:
+        return 1
+    if x<20:
+        return 0
+    return 1/(1+np.exp(-x))
 def getState(data, t, n):
     d = t - n + 1
     block = data[d:t + 1] if d >= 0 else -d * [data[0]] + data[0:t + 1] # pad with t0
@@ -171,6 +175,6 @@ def test(bs,iv):
     print(f"Testing finished in {toc - tic:0.4f} seconds")
 
 
-# train(100,3)
+train(1000,7)                #window_size and episode count
 
-test(16,[59000,58000])
+# test(16,[59000,58000])     #batch_size &inventory
