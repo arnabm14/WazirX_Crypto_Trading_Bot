@@ -29,7 +29,7 @@ from selenium.webdriver.common.by import By
 
 # Replace below path with the absolute path 
 # to chromedriver in your computer 
-driver = webdriver.Chrome('C:/chromedriver.exe') 
+driver = webdriver.Chrome('C:/chromedriver.exe')
       
 driver.get("https://web.whatsapp.com/") 
 wait = WebDriverWait(driver, 600) 
@@ -47,7 +47,7 @@ def texting(target,string):         # Whatsapp Text Code
     group_title = wait.until(EC.presence_of_element_located(( 
         By.XPATH, x_arg))) 
     group_title.click() 
-    inp_xpath = '//div[@class="_2_1wd copyable-text selectable-text"][@dir="ltr"][@data-tab="6"]'
+    inp_xpath = '//div[contains(@class,"copyable-text selectable-text")][@dir="ltr"][@data-tab="9"]'
     input_box = wait.until(EC.presence_of_element_located(( 
         By.XPATH, inp_xpath))) 
 
@@ -120,7 +120,7 @@ while 1 :
                                 target1 = '""'          # Enter your Group name whcih will receive all updates regarding the Second Paramater 
                                 texting(target1,string)
                             texting(target,string)
-                        break;
+                        break
     if counter%15==0:
          data=data[9:]
 
