@@ -53,7 +53,7 @@ def texting(target,string):         # Whatsapp Text Code
     group_title = wait.until(EC.presence_of_element_located(( 
         By.XPATH, x_arg))) 
     group_title.click() 
-    inp_xpath = '//div[@class="_2_1wd copyable-text selectable-text"][@dir="ltr"][@data-tab="6"]'
+    inp_xpath = '//div[contains(@class,"copyable-text selectable-text")][@dir="ltr"][@data-tab="9"]'
     input_box = wait.until(EC.presence_of_element_located(( 
         By.XPATH, inp_xpath))) 
     #pp.FAILSAFE=False
