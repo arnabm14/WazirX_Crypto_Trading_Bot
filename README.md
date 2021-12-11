@@ -2,8 +2,8 @@
 
 This is my personal project which uses the live market data from the Wazirx API to perform various operations as listed below along with the WazirX API Documentation on how to use it .
 
-One view is equal to one vote. If you like my work, please help me win it.
-Article Link  : https://www.analyticsvidhya.com/blog/2021/06/using-hurst-exponent-to-analyse-the-stock-and-crypto-market-with-python/
+Freelance Tech Article writer.
+Article Links  : https://www.analyticsvidhya.com/blog/author/arnab1408/
 
 `wazirtext.py` - This file can read the live market data and send a whatsapp notification to the desired group regarding the price fluctuations in the last 5 minutes. You need to manually scan the web.whatsapp.com QR code in the beginning and need to make sure that whsatsapp account is added to the groups you need to send he text to. The default Alert paramaters are 5% and 25% respectively and I have setup two groups for crucial and important alerts. It can be commented out or filtered accordingly. The chromedriver is by default set to be in the same location as the python file which can be changed in side the code. The data is written to Stock.csv every minute to keep track of historical data since WazirX does not allow that yet. Data Analysis can be done on it to understand the market trends.
 
